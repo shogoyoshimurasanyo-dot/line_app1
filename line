@@ -24,7 +24,7 @@
         // 1. LIFFの初期化
         async function initLiff() {
             try {
-                await liff.init({ liffId: "https://miniapp.line.me/2009019492-Oboj9IGd" }); // ここにあなたのLIFF IDを入力
+                await liff.init({ liffId: "2009019492-Oboj9IGd" }); // ここにあなたのLIFF IDを入力
                 if (!liff.isLoggedIn()) {
                     liff.login();
                 } else {
