@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>現在地送信アプリ</title>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; background-color: #f0f0f0; }
+        button { padding: 15px 30px; font-size: 18px; background-color: #06C755; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        button:disabled { background-color: #ccc; }
+        #status { margin-top: 20px; color: #666; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <button id="sendLocationBtn" disabled>現在地をトークに送る</button>
+    <p id="status">初期化中...</p>
+
+    <script>
+        const statusMsg = document.getElementById('status');
+        const btn = document.getElementById('sendLocationBtn');
+
+        // 1. LIFFの初期化
+        async function initLiff() {
+            try {
+                await liff.init({ liffId: "https://miniapp.line.me/2009019492-Oboj9IGd" }); // ここにあなたのLIFF IDを入力
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                } else {
+                    statusMsg.innerText = "準備完了！";
+                    btn.disabled = false;
+                }
+            } catch (err) {
+                statusMsg.innerText = "初期化失敗: " + err;
+            }
+        }
+
+        // 2. 位置情報の取得と送信
+        btn.addEventListener('click', () => {
+            statusMsg.innerText = "位置情報を取得中...";
+            
+            navigator.geolocation.getCurrentPosition(async (position) => {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                const googleMapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
+
+                try {
+                    // LINEのトーク画面にメッセージを送信
+                    await liff.sendMessages([
+                        {
+                            type: 'text',
+                            text: `現在地にいます！\n${googleMapsUrl}`
+                        }
+                    ]);
+                    statusMsg.innerText = "送信しました！";
+                    liff.closeWindow(); // 送信後にミニアプリを閉じる
+                } catch (err) {
+                    statusMsg.innerText = "送信失敗: " + err;
+                }
+            }, (err) => {
+                statusMsg.innerText = "位置情報の取得に失敗しました。";
+            });
+        });
+
+        initLiff();
+    </script>
+</body>
+</html>
